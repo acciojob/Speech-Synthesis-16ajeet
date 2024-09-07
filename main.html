@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Speech Synthesis</title>
   <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="speech.css">
 </head>
 <body>
 
@@ -29,14 +29,61 @@
     </div>
 
 <script>
-  const msg = new SpeechSynthesisUtterance();
+    const msg = new SpeechSynthesisUtterance();
   let voices = [];
   const voicesDropdown = document.querySelector('[name="voice"]');
-  const options = document.querySelectorAll('[type="range"], [name="text"]');
+  const rateControl = document.querySelector('[name="rate"]');
+  const pitchControl = document.querySelector('[name="pitch"]');
+  const textArea = document.querySelector('[name="text"]');
   const speakButton = document.querySelector('#speak');
   const stopButton = document.querySelector('#stop');
 
-  //Your code goes here
+  // Populate the voice options
+  function populateVoices() {
+    voices = speechSynthesis.getVoices();
+    voicesDropdown.innerHTML = voices.map((voice, i) => 
+      `<option value="${i}">${voice.name} (${voice.lang})</option>`
+    ).join('');
+  }
+
+  // Initialize the voice options when they are loaded
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = populateVoices;
+  } else {
+    populateVoices();
+  }
+
+  // Function to start speaking
+  function startSpeaking() {
+    const selectedVoiceIndex = voicesDropdown.value;
+    const selectedVoice = voices[selectedVoiceIndex];
+    msg.voice = selectedVoice;
+    msg.rate = rateControl.value;
+    msg.pitch = pitchControl.value;
+    msg.text = textArea.value;
+    speechSynthesis.speak(msg);
+  }
+
+  // Event listeners for buttons
+  speakButton.addEventListener('click', () => {
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+    }
+    startSpeaking();
+  });
+
+  stopButton.addEventListener('click', () => {
+    speechSynthesis.cancel();
+  });
+
+  // Update the speech settings when rate or pitch are changed
+  rateControl.addEventListener('input', () => {
+    msg.rate = rateControl.value;
+  });
+
+  pitchControl.addEventListener('input', () => {
+    msg.pitch = pitchControl.value;
+  });
 </script>
 
 </body>
